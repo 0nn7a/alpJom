@@ -1,0 +1,85 @@
+@use 'mixin' as *;
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  display: flex;
+  justify-content: center;
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+  line-height: 1.5;
+  font-family: 'Bricolage Grotesque', 'Noto Sans TC', Inter, Avenir, Helvetica,
+    Arial, sans-serif;
+  font-size: 10px;
+  font-weight: 500;
+  font-synthesis: none;
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body,
+#app {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  color: #000;
+  background-color: #fff;
+  overflow: hidden;
+}
+
+body,
+#app,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+a,
+label,
+input,
+textarea,
+button {
+  font-family: inherit;
+  margin: 0;
+}
+input {
+  @include autofill-disable();
+}
+input[type='password'] {
+  letter-spacing: 0;
+}
+
+input,
+button {
+  border: none;
+  outline: none;
+}
+
+label {
+  display: inline-block;
+}
+
+ul,
+ol,
+li {
+  list-style: none;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+img {
+  display: block;
+}
