@@ -1,7 +1,7 @@
 <script setup></script>
 
 <template>
-  <RouterView />
+  <h1 class="text-white">GAME</h1>
 </template>
 
 <style scoped></style>

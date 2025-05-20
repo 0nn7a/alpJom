@@ -2,12 +2,14 @@
 
 <template>
   <div class="relative flex items-center self-start">
+    <!-- 版本號 -->
     <span
       class="absolute z-10 top-9 right-1 py-2.5 px-2 text-md leading-1 text-zinc-100 bg-zinc-300/20 backdrop-blur-sm rotate-6 rounded"
     >
       0.0.1
     </span>
 
+    <!-- Logo -->
     <svg
       width="30"
       height="27"
@@ -92,6 +94,7 @@
       </defs>
     </svg>
 
+    <!-- Logotype -->
     <div
       class="flex p-10 transition duration-500 hover:rotate-180 ease-[cubic-bezier(.24,-0.06,.51,1)] hover:translate-y-1"
     >
