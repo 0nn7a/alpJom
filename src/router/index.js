@@ -3,6 +3,7 @@ import { createRouter, createWebHashHistory } from 'vue-router';
 export const routes = [
   {
     path: '/',
+    redirect: { name: 'Home' },
     component: () => import('@/layout/DefaultLayout.vue'),
     children: [
       {
