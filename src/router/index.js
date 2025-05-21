@@ -4,7 +4,7 @@ export const routes = [
   {
     path: '/',
     redirect: { name: 'Home' },
-    component: () => import('@/layout/DefaultLayout.vue'),
+    component: () => import('@/layouts/DefaultLayout.vue'),
     children: [
       {
         path: 'home',
