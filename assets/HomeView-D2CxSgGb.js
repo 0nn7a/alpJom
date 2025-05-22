@@ -1,0 +1,1 @@
+import{_ as e,c,o as t}from"./index-BabEu25w.js";const o="/alpJom/assets/arcade-CSZ5YGtr.png",s={},a={src:o,alt:"arcade"};function r(_,n){return t(),c("img",a)}const d=e(s,[["render",r],["__scopeId","data-v-efc9f78f"]]);export{d as default};
