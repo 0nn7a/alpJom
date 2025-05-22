@@ -1,13 +1,66 @@
 <script setup>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { getDefinition } from '@/apis/dictionary.js';
 import OtpInput from '@/components/OtpInput.vue';
 
-const code = ref('');
+const otpDom = ref(null);
 
+const wordSize = 5;
+const guessesArr = ref(Array(wordSize).fill(''));
+const guesses = computed(() => guessesArr.value.join(''));
+
+const handleOtpSubmit = async (str) => {
+  console.log('guesses: ', guesses.value, guessesArr.value);
+  console.log('answers: ', answer.value, answerArr.value);
+  console.log('correctPart: ', correctPart.value);
+
+  const bingo = compare();
+  if (bingo) {
+    alert('BINGO🎉🎉🎉將顯示單詞釋義！');
+
+    // CALL 辭典 api
+    if (str === definition.value.word) return;
+    isLoading.value = true;
+    resetDefinition();
+    try {
+      definition.value = await getDefinition(str);
+      hasResult.value = true;
+    } catch (e) {
+      if (e.status === 404) {
+        definition.value.word = str;
+        hasResult.value = false;
+      }
+    } finally {
+      isLoading.value = false;
+    }
+  } else {
+    checkCorrectPart();
+    otpDom.value.clearModel();
+  }
+};
+
+// 比對解答
+const answer = ref('apple');
+const answerArr = computed(() =>
+  answer.value ? answer.value.split('') : Array(wordSize).fill('')
+);
+const correctPart = ref(Array(wordSize).fill(''));
+const checkCorrectPart = () => {
+  for (let i = 0; i < wordSize; i++) {
+    if (guessesArr.value[i] === answerArr.value[i])
+      correctPart.value[i] = answer.value[i];
+  }
+};
+const clearCorrectPart = () => {
+  correctPart.value = Array(wordSize).fill('');
+};
+const compare = () => {
+  return guesses.value === answer.value;
+};
+
+// 查詢單詞釋義
 const isLoading = ref(true);
 const hasResult = ref(false);
-
 const defaultDefinition = JSON.stringify({
   word: '', // 查詢的單字
   // 各種詞性與定義
@@ -28,27 +81,18 @@ const resetDefinition = () => {
   definition.value = JSON.parse(defaultDefinition);
 };
 const definition = ref(JSON.parse(defaultDefinition));
-
-const handleOtpSubmit = async (str) => {
-  if (str === definition.value.word) return;
-  isLoading.value = true;
-  resetDefinition();
-  try {
-    definition.value = await getDefinition(str);
-    hasResult.value = true;
-  } catch (e) {
-    if (e.status === 404) {
-      definition.value.word = str;
-      hasResult.value = false;
-    }
-  } finally {
-    isLoading.value = false;
-  }
-};
 </script>
 
 <template>
-  <OtpInput :length="5" v-model="code" @submit="handleOtpSubmit" />
+  <OtpInput
+    ref="otpDom"
+    :length="5"
+    :placeholders="correctPart"
+    v-model="guessesArr"
+    @submit="handleOtpSubmit"
+  />
+
+  <!-- 顯示辭典 api 結果 -->
   <h1 v-if="!isLoading && !hasResult" class="text-6xl text-zinc-100">
     This word does not exist.
   </h1>
