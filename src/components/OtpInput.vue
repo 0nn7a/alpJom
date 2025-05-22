@@ -1,25 +1,24 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps({
   length: { type: Number, default: 5 },
   placeholders: { type: Array, default: () => [] },
+  correctIdx: { type: Array, default: [] },
+  unsureIdx: { type: Array, default: [] },
+  disabled: { type: Boolean, default: false },
 });
 const emit = defineEmits(['update:modelValue', 'submit']);
 
 const regex = /^[a-z]$/;
 const model = defineModel({ required: true });
-watch(
-  () => props.placeholders,
-  (value) => {
-    console.log('phs', value);
-  },
-  { immediate: true }
-);
 
 const inputs = ref([]);
 const setInputRef = (el, idx) => {
   if (el) inputs.value[idx] = el;
+};
+const focusFirst = () => {
+  inputs.value[0].focus();
 };
 
 const handleInput = (e, idx) => {
@@ -66,19 +65,15 @@ const handleKeydown = (e, idx) => {
 };
 
 const onSubmit = () => {
-  if (model.value.every(Boolean)) emit('submit', model.value.join(''));
+  if (model.value.every(Boolean)) emit('submit');
 };
 
 const clearModel = () => {
   model.value = Array(props.length).fill('');
-  inputs.value[0].focus();
 };
 
-onMounted(() => {
-  inputs.value[0].focus();
-});
-
 defineExpose({
+  focusFirst,
   clearModel,
 });
 </script>
@@ -91,7 +86,15 @@ defineExpose({
       :ref="(el) => setInputRef(el, idx)"
       :value="model[idx]"
       :placeholder="props.placeholders[idx]"
-      class="w-16 h-18 text-center text-4xl text-zinc-100 uppercase border border-zinc-500 rounded-lg focus:outline-none focus:ring-1 focus:zinc-100 transition duration-300"
+      :disabled="props.disabled"
+      :class="{
+        'text-green-300': props.correctIdx.includes(idx),
+        'text-orange-300': props.unsureIdx.includes(idx),
+        'text-zinc-100':
+          !props.correctIdx.includes(idx) && !props.unsureIdx.includes(idx),
+        'opacity-50': props.disabled,
+      }"
+      class="w-16 h-18 text-center text-4xl uppercase border border-zinc-500 rounded-lg focus:outline-none focus:ring-1 focus:zinc-100 transition duration-300"
       type="text"
       inputmode="latin"
       lang="en"

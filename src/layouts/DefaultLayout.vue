@@ -7,7 +7,9 @@ const nav = computed(() => routes[0].children.map((r) => r.name));
 </script>
 
 <template>
-  <div class="h-full w-full flex flex-col items-center gap-10 px-8 bg-zinc-950">
+  <div
+    class="h-full w-full flex flex-col items-center gap-10 px-8 text-zinc-100 bg-zinc-950"
+  >
     <header class="w-full flex items-center">
       <LogoRotation />
       <nav
