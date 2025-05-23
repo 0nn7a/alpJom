@@ -1,5 +1,5 @@
 <script setup>
-import { useTemplateRef, ref, onMounted, computed } from 'vue';
+import { useTemplateRef, ref, onMounted, computed, nextTick } from 'vue';
 // import { getDefinition } from '@/apis/dictionary.js';
 import OtpInput from '@/components/OtpInput.vue';
 import OnceRow from '@/models/OnceRow.js';
@@ -9,36 +9,45 @@ const times = 6; // 最大猜測次數
 const answer = 'world';
 
 const otpRefs = useTemplateRef('otpRefs');
-const disabled = ref(Array(times).fill(false));
-const setAllDisabled = (bool) => {
-  disabled.value = Array(times).fill(bool);
+const focusRow = async (idx) => {
+  await nextTick();
+  otpRefs.value[idx].focusFirst();
 };
 
-const record = ref(
-  Array.from({ length: times }, () => new OnceRow(answer, size)),
-);
+const initRecord = () => {
+  return Array.from({ length: times }, (_, idx) => {
+    const row = new OnceRow(answer, size);
+    if (!idx) row.setDisabled(false);
+    return row;
+  });
+};
+const record = ref(initRecord());
+const setAllDisabled = () => {
+  record.value.forEach((row) => row.setDisabled(true));
+};
 
 const handleOtpSubmit = async (idx) => {
-  disabled.value[idx] = true;
   const thisRow = record.value[idx];
   const nextRow = record.value[idx + 1];
+  thisRow.setDisabled(true);
+
   const bingo = thisRow.compare();
   if (bingo) {
     alert('BINGO🎉🎉🎉');
-    setAllDisabled(true);
-  } else {
-    if (nextRow) {
-      nextRow.cp = thisRow.check();
-      otpRefs.value[idx + 1].focusFirst();
-    }
+    setAllDisabled();
+  } else if (nextRow) {
+    nextRow.setDisabled(false);
+    nextRow.cp = thisRow.check();
+    await focusRow(idx + 1);
   }
 };
 
-const isCompleted = computed(() => disabled.value.every(Boolean));
+const isCompleted = computed(() =>
+  record.value.map((row) => row.d).every(Boolean)
+);
 const restart = () => {
-  record.value = Array.from({ length: times }, () => new OnceRow(answer, size));
-  setAllDisabled(false);
-  otpRefs.value[0].focusFirst();
+  record.value = initRecord();
+  focusRow(0);
 };
 
 // 查詢單詞釋義
@@ -82,7 +91,9 @@ const restart = () => {
 //   }
 // }
 
-onMounted(() => otpRefs.value[0].focusFirst());
+onMounted(() => {
+  focusRow(0);
+});
 </script>
 
 <template>
@@ -99,7 +110,7 @@ onMounted(() => otpRefs.value[0].focusFirst());
         :placeholders="record[idx].cp"
         :correctIdx="record[idx].ci"
         :unsureIdx="record[idx].ui"
-        :disabled="disabled[idx]"
+        :disabled="record[idx].d"
         v-model="record[idx].ga"
         @submit="handleOtpSubmit(idx)"
       />

@@ -2,6 +2,7 @@ export default class OnceRow {
   constructor(answer, size = 5) {
     this.as = answer; // answerString
     this.size = size;
+    this.d = true; // disabled
     this.ga = Array(size).fill(''); // guessesArray
     this.cp = Array(size).fill(''); // CorrectPart
     this.ci = []; // CorrectIndex
@@ -16,6 +17,11 @@ export default class OnceRow {
   // guessesString
   get gs() {
     return this.ga.join('');
+  }
+
+  // 設定 disabled
+  setDisabled(bool) {
+    this.d = bool;
   }
 
   // 檢查並提示 - 得出完全正確的部分 or 字母正確但位置不正確的部分
