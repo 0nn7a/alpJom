@@ -1,15 +1,33 @@
 <script setup>
-import { useTemplateRef, ref, onMounted, computed, nextTick } from 'vue';
+import { useTemplateRef, ref, onMounted, computed, nextTick, watch } from 'vue';
 // import { getDefinition } from '@/apis/dictionary.js';
 import OtpInput from '@/components/OtpInput.vue';
 import OnceRow from '@/models/OnceRow.js';
 import WordleGame from '@/utils/spellChecker.js';
 
+const modeOptions = ['Daily', 'Random'];
+const mode = ref('Random');
+const toggleMode = (m) => {
+  mode.value = m;
+  restart();
+};
+
 const game = new WordleGame('normal');
-const question = game.getRandomWord();
-const size = question.length; // 單字長度
+const question = computed(() => {
+  if (mode.value === 'Daily') return game.getDailyWord();
+  return game.getRandomWord();
+});
+
+const size = computed(() => question.value.length); // 單字長度
 const times = 6; // 最大猜測次數
-const answer = question.word;
+const answer = computed(() => question.value.word);
+watch(
+  answer,
+  (value) => {
+    console.log(value);
+  },
+  { immediate: true }
+);
 
 const otpRefs = useTemplateRef('otpRefs');
 const focusRow = async (idx) => {
@@ -19,7 +37,7 @@ const focusRow = async (idx) => {
 
 const initRecord = () => {
   return Array.from({ length: times }, (_, idx) => {
-    const row = new OnceRow(answer, size);
+    const row = new OnceRow(answer, size.value);
     if (!idx) row.setDisabled(false);
     return row;
   });
@@ -41,7 +59,7 @@ const handleOtpSubmit = async (idx) => {
 
   const bingo = thisRow.compare();
   if (bingo) {
-    alert('🎉🎉🎉\n答案是：' + answer);
+    alert('🎉🎉🎉\n答案是：' + answer.value);
     setAllDisabled();
   } else {
     if (nextRow) {
@@ -49,7 +67,7 @@ const handleOtpSubmit = async (idx) => {
       nextRow.cp = thisRow.check();
       await focusRow(idx + 1);
     } else {
-      alert('🥹🥹🥹\n答案是：' + answer);
+      alert('🥹🥹🥹\n答案是：' + answer.value);
     }
   }
 };
@@ -112,9 +130,20 @@ onMounted(() => {
   <section
     class="mb-36 h-full w-full flex flex-col justify-center items-center gap-6"
   >
+    <div class="flex items-center gap-4">
+      <button
+        v-for="m of modeOptions"
+        :key="m"
+        type="button"
+        class="py-2 px-4 text-lg bg-zinc-800 rounded cursor-pointer transition duration-300 hover:bg-zinc-700"
+        @click="toggleMode(m)"
+      >
+        {{ m }}
+      </button>
+    </div>
     <div class="flex flex-col items-center">
       <h1 class="text-4xl">Classic Mode</h1>
-      <p class="text-xl text-zinc-500">Random Words</p>
+      <p class="text-xl text-zinc-500">{{ mode }} Words</p>
     </div>
     <div class="flex flex-col gap-4">
       <OtpInput
