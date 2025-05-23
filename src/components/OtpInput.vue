@@ -82,7 +82,7 @@ defineExpose({
   <form class="flex gap-4" @submit="onSubmit">
     <input
       v-for="(_, idx) in model"
-      :key="idx"
+      :key="'Otp' + idx"
       :ref="(el) => setInputRef(el, idx)"
       :value="model[idx]"
       :placeholder="props.placeholders[idx]"
@@ -95,6 +95,8 @@ defineExpose({
         'opacity-50': props.disabled,
       }"
       class="w-16 h-18 text-center text-4xl uppercase border border-zinc-500 rounded-lg focus:outline-none focus:ring-1 focus:zinc-100 transition duration-300"
+      :id="'Otp' + idx"
+      :name="'Otp' + idx"
       type="text"
       inputmode="latin"
       lang="en"
