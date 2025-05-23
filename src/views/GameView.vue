@@ -3,10 +3,13 @@ import { useTemplateRef, ref, onMounted, computed, nextTick } from 'vue';
 // import { getDefinition } from '@/apis/dictionary.js';
 import OtpInput from '@/components/OtpInput.vue';
 import OnceRow from '@/models/OnceRow.js';
+import WordleGame from '@/utils/spellChecker.js';
 
-const size = 5; // 單字長度
+const game = new WordleGame('normal');
+const question = game.getRandomWord();
+const size = question.length; // 單字長度
 const times = 6; // 最大猜測次數
-const answer = 'world';
+const answer = question.word;
 
 const otpRefs = useTemplateRef('otpRefs');
 const focusRow = async (idx) => {
@@ -28,17 +31,26 @@ const setAllDisabled = () => {
 
 const handleOtpSubmit = async (idx) => {
   const thisRow = record.value[idx];
+
+  if (!game.isValidWord(thisRow.gs)) {
+    return alert('您輸入的單詞不存在！');
+  }
+
   const nextRow = record.value[idx + 1];
   thisRow.setDisabled(true);
 
   const bingo = thisRow.compare();
   if (bingo) {
-    alert('BINGO🎉🎉🎉');
+    alert('🎉🎉🎉\n答案是：' + answer);
     setAllDisabled();
-  } else if (nextRow) {
-    nextRow.setDisabled(false);
-    nextRow.cp = thisRow.check();
-    await focusRow(idx + 1);
+  } else {
+    if (nextRow) {
+      nextRow.setDisabled(false);
+      nextRow.cp = thisRow.check();
+      await focusRow(idx + 1);
+    } else {
+      alert('🥹🥹🥹\n答案是：' + answer);
+    }
   }
 };
 
@@ -100,7 +112,10 @@ onMounted(() => {
   <section
     class="mb-36 h-full w-full flex flex-col justify-center items-center gap-6"
   >
-    <h1 class="text-4xl text-zinc-50">Classic Mode</h1>
+    <div class="flex flex-col items-center">
+      <h1 class="text-4xl">Classic Mode</h1>
+      <p class="text-xl text-zinc-500">Random Words</p>
+    </div>
     <div class="flex flex-col gap-4">
       <OtpInput
         v-for="(no, idx) in 6"
