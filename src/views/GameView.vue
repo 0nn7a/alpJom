@@ -13,10 +13,12 @@ const toggleMode = (m) => {
 };
 
 const game = new WordleGame('normal');
-const question = computed(() => {
-  if (mode.value === 'Daily') return game.getDailyWord();
-  return game.getRandomWord();
-});
+const question = ref({});
+const updateQuestion = () => {
+  question.value =
+    mode.value === 'Daily' ? game.getDailyWord() : game.getRandomWord();
+};
+updateQuestion();
 
 const size = computed(() => question.value.length); // 單字長度
 const times = 6; // 最大猜測次數
@@ -35,40 +37,41 @@ const focusRow = async (idx) => {
   otpRefs.value[idx].focusFirst();
 };
 
+const record = ref([]);
 const initRecord = () => {
-  return Array.from({ length: times }, (_, idx) => {
+  record.value = Array.from({ length: times }, (_, idx) => {
     const row = new OnceRow(answer, size.value);
     if (!idx) row.setDisabled(false);
     return row;
   });
 };
-const record = ref(initRecord());
+initRecord();
 const setAllDisabled = () => {
   record.value.forEach((row) => row.setDisabled(true));
 };
 
 const handleOtpSubmit = async (idx) => {
   const thisRow = record.value[idx];
+  const nextRow = record.value[idx + 1];
 
-  if (!game.isValidWord(thisRow.gs)) {
-    return alert('您輸入的單詞不存在！');
+  if (!game.isValidWord(thisRow.gs)) return alert('您輸入的單詞不存在！');
+
+  thisRow.setDisabled(true);
+  const bingo = thisRow.compare();
+
+  if (bingo) {
+    thisRow.check();
+    setAllDisabled();
+    alert(`🎉🎉🎉\n答案是：${answer.value}`);
+    return;
   }
 
-  const nextRow = record.value[idx + 1];
-  thisRow.setDisabled(true);
-
-  const bingo = thisRow.compare();
-  if (bingo) {
-    alert('🎉🎉🎉\n答案是：' + answer.value);
-    setAllDisabled();
+  if (nextRow) {
+    nextRow.cp = thisRow.check();
+    nextRow.setDisabled(false);
+    await focusRow(idx + 1);
   } else {
-    if (nextRow) {
-      nextRow.setDisabled(false);
-      nextRow.cp = thisRow.check();
-      await focusRow(idx + 1);
-    } else {
-      alert('🥹🥹🥹\n答案是：' + answer.value);
-    }
+    alert(`🥹🥹🥹\n答案是：${answer.value}`);
   }
 };
 
@@ -76,7 +79,8 @@ const isCompleted = computed(() =>
   record.value.map((row) => row.d).every(Boolean)
 );
 const restart = () => {
-  record.value = initRecord();
+  updateQuestion();
+  initRecord();
   focusRow(0);
 };
 
